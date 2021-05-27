@@ -15,9 +15,9 @@ class BananaEnv():
         Class constructor / BananaEnv initializer
 
         Args:
-            path: String path to Unity Banana simulation
-            seed: Integer representing seed for random number generation
-            verbose: Boolean specifying verbosity
+            path (string): Path to Unity Banana simulation
+            seed (int): Seed for random number generation
+            verbose (bool): Verbosity
         
         Returns:
             BananaEnv class object
@@ -61,7 +61,7 @@ class BananaEnv():
         Reset environment
 
         Args:
-            train: Boolean specifying training mode
+            train (bool): Use training mode
         
         Returns:
             None
@@ -97,16 +97,16 @@ class BananaEnv():
         sample & perform random action
 
         Args:
-            action: Integer representing action to be performed
+            action (int): Action to be performed
 
         Returns:
             Tuple containing environment state, reward, brain info, & 
             completion status
             
-            state: Vector representing environment observation 
-            reward: Float representing reward for performing specified action
-            info: BrainInfo object representing latest environment information
-            done: Boolean representing if simulation is complete
+            state (vector): Environment observation 
+            reward (float): Reward for performing specified action
+            info (BrainInfo): Latest environment information
+            done (bool): Is simulation complete
         
         """
                 
@@ -149,7 +149,7 @@ class BananaEnv():
         Set seed for random number generation, sampling, & repeatibility
         
         Args:
-            seed: Integer representing seed for random number generation
+            seed (int): Seed for random number generation
 
         Returns:
             None
