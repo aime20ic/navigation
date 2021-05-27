@@ -54,6 +54,14 @@ class BananaEnv():
         # Reset environment
         self.reset(train)
 
+        # Debug
+        if self.verbose:
+            print('\nNumber of agents: {}'.format(len(self.agents)))
+            print('Number of actions: {}'.format(self.action_size))
+            print('Valid actions: {}'.format(self.actions))
+            print('States look like: {}'.format(self.state))
+            print('States have length: {}\n'.format(self.state_size))
+
         return
 
     def reset(self, train=False):
@@ -80,14 +88,6 @@ class BananaEnv():
         # Create list of allowable actions
         self.actions = list(range(self.action_size))
         self.actions.append(None)
-
-        # Debug
-        if self.verbose:
-            print('\nNumber of agents: {}'.format(len(self.agents)))
-            print('Number of actions: {}'.format(self.action_size))
-            print('Valid actions: {}'.format(self.actions))
-            print('States look like: {}'.format(self.state))
-            print('States have length: {}\n'.format(self.state_size))
 
         return self.state
 
