@@ -64,7 +64,7 @@ class BananaEnv():
             train (bool): Use training mode
         
         Returns:
-            None
+            Environment initial observation (vector)
         
         """
 
@@ -89,7 +89,7 @@ class BananaEnv():
             print('States look like: {}'.format(self.state))
             print('States have length: {}'.format(self.state_size))
 
-        return
+        return self.state
 
     def step(self, action=None):
         """
