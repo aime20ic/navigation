@@ -180,14 +180,23 @@ def main(args):
 
     # Close environment
     env.close()
-    
+
+    # Create avg score
+    avg_score = [np.mean(scores[:i+1] for i in range(len(scores)))]
+
     # Plot scores
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    plt.plot(np.arange(len(scores)), scores)
+    plt.plot(scores, color='blue', label='Scores')
+    plt.plot(avg_score, color='green', label='Average')
     plt.ylabel('Score')
     plt.xlabel('Episode #')
+    plt.legend(loc='upper left')
     plt.show()
+
+    # Save figure
+    plt.savefig('dqn_performance.png'))
+    plt.close()
 
     return
 
