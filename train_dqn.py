@@ -52,7 +52,10 @@ def parse_args():
         help='Maximum number of training episodes'
     )
     parser.add_argument('--output', type=str, default='./output',
-        help='Dir to save models, logs, & other output'
+        help='Directory to save models, logs, & other output'
+    )
+    parser.add_argument('--run-id', type=int,
+        help='Execution run identifier'
     )
     parser.add_argument('--seed', type=int, default=0,
         help='Seed for repeatability'
@@ -64,9 +67,6 @@ def parse_args():
     parser.add_argument('--tau', type=float, default=1e-3,
         help='Interpolation weight for soft update of target parameters'
     )
-    parser.add_argument('--train-id', type=int,
-        help='Training run identifier'
-    )
     parser.add_argument('--update-every', type=int, default=4,
         help='Update frequency'
     )
@@ -76,14 +76,45 @@ def parse_args():
     # Convert hidden layer argument to list of ints
     args.hidden = [int(size) for size in args.hidden]
 
-    # Convert current time to training ID if none specified
-    if args.train_id is None:
-        args.train_id = int(time.time())
+    # Convert current time to run ID if none specified
+    if args.run_id is None:
+        args.run_id = int(time.time())
 
-    # Convert output directory to path object including training ID
-    args.output = Path(args.output + '/' + str(args.train_id) + '/')
+    # Convert output directory to path object including run ID
+    args.output = Path(args.output + '/' + str(args.run_id) + '/')
 
     return args
+
+def plot_performance(scores, output, run_id, name):
+    """
+    Plot summary of DQN performance on environment
+
+    Args:
+        scores (list of float): Score per simulation episode
+        output (Path): Directory to save models, logs, & other output
+        run_id (int): Execution run identifier
+        name (str): Name for file
+
+    """
+
+    # Create avg score
+    avg_score = [np.mean(scores[:i+1]) for i in range(len(scores))]
+
+    # Plot scores
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    plt.plot(scores, color='cyan', marker='.', label='Scores')
+    plt.plot(avg_score, color='blue', label='Average')
+    plt.ylabel('Score')
+    plt.xlabel('Episode #')
+    plt.legend(loc='upper left')
+    plt.show(block=False)
+
+    # Save figure
+    plt.savefig(output / (str(run_id) + '__' + name))
+    plt.close()
+
+    return
 
 def dqn(env, agent, **kwargs):
     """
@@ -94,11 +125,13 @@ def dqn(env, agent, **kwargs):
         agent (DQNAgent): Deep q-learning agent
 
     Returns:
-        scores (type): Description
+        None
 
     """
-    scores = []                        # list containing scores from each episode
-    scores_window = deque(maxlen=100)  # last 100 scores
+    scores = []                                 # list containing scores from each episode
+    score_goal = 13.0                           # goal to get to
+    window_size = 100                           # size for rolling window
+    scores_window = deque(maxlen=window_size)   # last 100 scores
 
     # Initialize key word argument variables
     n_episodes = kwargs.get('n_episodes', 2000)
@@ -106,8 +139,8 @@ def dqn(env, agent, **kwargs):
     eps_start = kwargs.get('eps_start', 1.0)
     eps_end = kwargs.get('eps_end', 0.01)
     eps_decay = kwargs.get('eps_decay', 0.995)
-    train_id = kwargs.get('train_id', int(time.time()))
-    output = kwargs.get('output', Path('./output/' + str(train_id) + '/'))
+    run_id = kwargs.get('run_id', int(time.time()))
+    output = kwargs.get('output', Path('./output/' + str(run_id) + '/'))
     verbose = kwargs.get('verbose', False)
 
     # Initialize epsilon
@@ -147,26 +180,31 @@ def dqn(env, agent, **kwargs):
         # Decrease epsilon
         eps = max(eps_end, eps_decay*eps)
 
-        # Print scores info
+        # Print episode performance
         print('\rEpisode {}\tAverage Score: {:.2f}'.format(
             i_episode, np.mean(scores_window)), end="")
-        if i_episode % 100 == 0:
+
+        # Print & log performance of last 
+        if i_episode % window_size == 0:
             print('\rEpisode {}\tAverage Score: {:.2f}'.format(
                 i_episode, np.mean(scores_window)))
 
         # In order to solve the environment, your agent must get an average
         # score of +13 over 100 consecutive episodes
-        if np.mean(scores_window)>=13.0:
+        if np.mean(scores_window) >= score_goal:
             print('\nEnvironment solved in {:d} episodes!'
                 '\tAverage Score: {:.2f}'.format(
                     i_episode-100, np.mean(scores_window)
                 )
             )
             torch.save(agent.qnetwork_local.state_dict(), 
-                output / (str(train_id) + '__checkpoint.pth'))
+                output / (str(run_id) + '__model.pth'))
             break
+    
+    # Plot training performance
+    plot_performance(scores, output, run_id, 'dqn_training.png')
 
-    return scores
+    return
 
 def main(args):
     """
@@ -194,23 +232,6 @@ def main(args):
 
     # Close environment
     env.close()
-
-    # Create avg score
-    avg_score = [np.mean(scores[:i+1]) for i in range(len(scores))]
-
-    # Plot scores
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    plt.plot(scores, color='blue', label='Scores')
-    plt.plot(avg_score, color='green', label='Average')
-    plt.ylabel('Score')
-    plt.xlabel('Episode #')
-    plt.legend(loc='upper left')
-    plt.show(block=False)
-
-    # Save figure
-    plt.savefig(args.output / (str(args.train_id) + '__dqn_performance.png'))
-    plt.close()
 
     return
 
