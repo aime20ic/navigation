@@ -8,8 +8,8 @@ class BananaEnv():
     Unity Banana environment simulation
     """
 
-    def __init__(self, path='Banana_Windows_x86_64/Banana.exe', seed=None, 
-            verbose=False
+    def __init__(self, path='Banana_Windows_x86_64/Banana.exe', train=False, 
+            seed=None, verbose=False
         ):
         """
         Class constructor / BananaEnv initializer
@@ -52,7 +52,7 @@ class BananaEnv():
         self.seed(seed)
 
         # Reset environment
-        self.reset()
+        self.reset(train)
 
         return
 
