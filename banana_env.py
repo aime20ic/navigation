@@ -83,11 +83,11 @@ class BananaEnv():
 
         # Debug
         if self.verbose:
-            print('Number of agents: {}'.format(len(self.agents)))
+            print('\nNumber of agents: {}'.format(len(self.agents)))
             print('Number of actions: {}'.format(self.action_size))
             print('Valid actions: {}'.format(self.actions))
             print('States look like: {}'.format(self.state))
-            print('States have length: {}'.format(self.state_size))
+            print('States have length: {}\n'.format(self.state_size))
 
         return self.state
 
@@ -118,7 +118,7 @@ class BananaEnv():
 
         # Sample random action if no action specified
         if action is None:
-            action = self.rng.choice(self.actions)
+            action = self.rng.choice(self.action_size) # Can't pick None
 
         # Get current state
         state = self.state
