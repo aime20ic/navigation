@@ -178,6 +178,9 @@ def main(args):
         verbose=args.verbose
     )
 
+    # Close environment
+    env.close()
+    
     # Plot scores
     fig = plt.figure()
     ax = fig.add_subplot(111)
