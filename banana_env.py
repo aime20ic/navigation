@@ -100,12 +100,12 @@ class BananaEnv():
             action (int): Action to be performed
 
         Returns:
-            Tuple containing environment state, reward, brain info, & 
-            completion status
+            Tuple containing (state, action, reward, next_state, done) 
             
-            state (vector): Environment observation 
+            state (vector): Environment observation before action
+            action (int): Action to be performed
             reward (float): Reward for performing specified action
-            info (BrainInfo): Latest environment information
+            state (vector): Environment observation after action
             done (bool): Is simulation complete
         
         """
@@ -120,15 +120,21 @@ class BananaEnv():
         if action is None:
             action = self.rng.choice(self.actions)
 
+        # Get current state
+        state = self.state
+
         # Send action to environment
         self.env_info = self.env.step(action)[self.brain_name]  
 
         # Get environment status
-        self.state = self.env_info.vector_observations[0]
+        next_state = self.env_info.vector_observations[0]
         self.reward = self.env_info.rewards[0]
         self.done = self.env_info.local_done[0]
 
-        return self.state, self.reward, self.env_info, self.done
+        # Set current state
+        self.state = next_state
+
+        return state, action, self.reward, next_state, self.done
 
     def close(self):
         """
