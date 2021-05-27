@@ -121,7 +121,7 @@ class DQNAgent():
 
         # Epsilon-greedy action selection
         if self.rng.uniform() > eps:
-            return np.argmax(action_values.cpu().data.numpy())
+            return np.argmax(action_values.cpu().data.numpy()).astype(int)
         else:
             return self.rng.choice(np.arange(self.action_size))
         
