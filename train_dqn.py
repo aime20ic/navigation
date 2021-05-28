@@ -247,7 +247,7 @@ def eval_agent(agent, env, eval_type, **kwargs):
             write2path(window_summary, log)
 
         # Terminal condition check
-        if np.mean(scores_window) >= score_goal:
+        if eval_type == 'train' and np.mean(scores_window) >= score_goal:
             window_summary = (
                 '\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f}'
             ).format(i_episode-100, np.mean(scores_window))
