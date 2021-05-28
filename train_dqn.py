@@ -93,7 +93,7 @@ def parse_args():
 
     # Convert string paths to path objects
     args.output = Path(args.output + '/' + str(args.run_id) + '/')
-    args.load = Path(args.load)
+    args.load = Path(args.load) if args.load else None
 
     return args
 
