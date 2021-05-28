@@ -1,4 +1,5 @@
 import time
+import json
 import torch
 import argparse
 import numpy as np
@@ -51,6 +52,9 @@ def parse_args():
     parser.add_argument('--n-episodes', type=int, default=2000,
         help='Maximum number of training episodes'
     )
+    parser.add_argument('--n-eval', type=int, default=100,
+        help='Maximum number of evaluation episodes'
+    )
     parser.add_argument('--output', type=str, default='./output',
         help='Directory to save models, logs, & other output'
     )
@@ -66,6 +70,9 @@ def parse_args():
     )
     parser.add_argument('--tau', type=float, default=1e-3,
         help='Interpolation weight for soft update of target parameters'
+    )
+    parser.add_argument('--t-eval', type=int, default=300,
+        help='Maximum number of timesteps per episode for evaluation'
     )
     parser.add_argument('--update-every', type=int, default=4,
         help='Update frequency'
@@ -85,15 +92,13 @@ def parse_args():
 
     return args
 
-def plot_performance(scores, output, run_id, name):
+def plot_performance(scores, name):
     """
     Plot summary of DQN performance on environment
 
     Args:
         scores (list of float): Score per simulation episode
-        output (Path): Directory to save models, logs, & other output
-        run_id (int): Execution run identifier
-        name (str): Name for file
+        name (Path): Name for file
 
     """
 
@@ -111,8 +116,8 @@ def plot_performance(scores, output, run_id, name):
     plt.show(block=False)
 
     # Save figure
-    output.mkdir(parents=True, exist_ok=True)
-    plt.savefig(output / (str(run_id) + '__' + name))
+    name.parent.mkdir(parents=True, exist_ok=True)
+    plt.savefig(name)
     plt.close()
 
     return
@@ -181,7 +186,8 @@ def eval_agent(agent, env, eval_type, **kwargs):
     eps = eps_start
 
     # Create log name
-    log = output / (str(run_id) + '__performance.log')
+    prefix = str(run_id) + '__' + agent.name + '__' + env.name
+    log = output / (prefix + '__performance.log')
 
     # Train for n_episodes
     for i_episode in range(1, n_episodes+1):
@@ -214,9 +220,9 @@ def eval_agent(agent, env, eval_type, **kwargs):
             if done:
                 break
         
-        # Update scores
-        scores_window.append(score)       # save most recent score
-        scores.append(score)              # save most recent score
+        # Save most recent scores
+        scores_window.append(score)
+        scores.append(score)
 
         # Decrease epsilon
         eps = max(eps_end, eps_decay*eps)
@@ -246,11 +252,24 @@ def eval_agent(agent, env, eval_type, **kwargs):
 
     # Save model 
     output.mkdir(parents=True, exist_ok=True)
-    torch.save(agent.qnetwork_local.state_dict(), 
-        output / (str(run_id) + '__model.pth'))
+    torch.save(agent.qnetwork_local.state_dict(), output / (prefix + '__model.pth'))
     
     # Plot training performance
-    plot_performance(scores, output, run_id, 'dqn_training.png')
+    if eval_type == 'train':
+        plot_performance(scores, output / (prefix + '__training.png'))
+    else:
+        plot_performance(scores, output / (prefix + '__testing.png'))
+
+    # Save evaluation parameters
+    parameters = {
+        'n_episodes': n_episodes,
+        'max_t': max_t,
+        'eps_start': eps_start,
+        'eps_end': eps_end,
+        'eps_decay': eps_decay
+    }
+    with open(prefix + '__parameters.json', 'w') as file:
+        json.dump(parameters, file, indent=4, sort_keys=True)
 
     return
 
@@ -270,26 +289,26 @@ def main(args):
     np.random.seed(args.seed)
     diff_seed = args.seed + np.random.randint(100)
 
-    # Create environments
-    train_env = BananaEnv(args.sim, train=True, seed=args.seed, verbose=args.verbose)
-    eval_env = BananaEnv(args.sim, train=False, seed=diff_seed, verbose=args.verbose)
-    naive_env = BananaEnv(args.sim, train=False, seed=diff_seed, verbose=args.verbose)
-
-    # Create agents
+    # Train agent
+    train_env = BananaEnv(args.sim, name='train-env', train=True, seed=args.seed, verbose=args.verbose)
     agent = DQNAgent(train_env.state_size, train_env.action_size, name='dqn', **vars(args))
-    naive = DQNAgent(naive_env.state_size, naive_env.action_size, name='naive', **vars(args))
-
-    # Perform deep q-learning
-    eval_agent(train_env, agent, 'train', **vars(args))
-
-    # Evaluate agents
-    eval_agent(agent, eval_env, 'test', **vars(args))
-    eval_agent(naive, naive_env, 'test', **vars(args))
-
-    # Close environments
+    eval_agent(agent, train_env, 'train', **vars(args))
     train_env.close()
-    eval_env.close()
+
+    # Set evaluation parameters
+    args.n_episodes = args.n_eval
+    args.max_t = args.t_eval
+
+    # Evaluate naive agent
+    naive_env = BananaEnv(args.sim, name='naive-env', train=False, seed=diff_seed, verbose=args.verbose)
+    naive = DQNAgent(naive_env.state_size, naive_env.action_size, name='naive', **vars(args))
+    eval_agent(naive, naive_env, 'test', **vars(args))
     naive_env.close()
+
+    # Evaluate trained agent
+    eval_env = BananaEnv(args.sim, name='eval-env', train=False, seed=diff_seed, verbose=args.verbose)
+    eval_agent(agent, eval_env, 'test', **vars(args))
+    eval_env.close()
 
     return
 

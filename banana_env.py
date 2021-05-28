@@ -8,14 +8,15 @@ class BananaEnv():
     Unity Banana environment simulation
     """
 
-    def __init__(self, path='Banana_Windows_x86_64/Banana.exe', train=False, 
-            seed=None, verbose=False
-        ):
+    def __init__(self, path, name, worker_id=0, train=False, seed=None, verbose=False):
         """
         Class constructor / BananaEnv initializer
 
         Args:
             path (string): Path to Unity Banana simulation
+            name (string): Name for environment
+            worker_id (int): Indicates port to use for communication
+            train (bool): Unity environment training mode
             seed (int): Seed for random number generation
             verbose (bool): Verbosity
         
@@ -26,6 +27,8 @@ class BananaEnv():
 
         # Initialize environment variables
         self.env = None
+        self.name = name
+        self.worker_id = worker_id
         self.brain_name = None
         self.brain = None
         self.agents = None
@@ -42,7 +45,7 @@ class BananaEnv():
         self.done = None
         
         # Create environment
-        self.env = UnityEnvironment(file_name=path, seed=seed)
+        self.env = UnityEnvironment(file_name=path, worker_id=self.worker_id, seed=seed)
 
         # Get default Unity environment "brain"
         self.brain_name = self.env.brain_names[0]
