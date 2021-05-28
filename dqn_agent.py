@@ -31,6 +31,7 @@ class DQNAgent():
 
         # Set agent class variables
         self.t_step = 0
+        self.name = kwargs.get('name', 'dqn_agent')
         self.run_id = kwargs.get('run_id', int(time.time()))
         self.output = kwargs.get('output', 
             Path('./output/' + str(self.run_id) + '/'))
@@ -234,7 +235,7 @@ class DQNAgent():
         """
 
         # Create file path
-        path = self.output / (str(self.run_id) + '__dqn_agent.json')
+        path = self.output / (str(self.run_id) + '__' + self.name + '.json')
         path.parent.mkdir(parents=True, exist_ok=True)
 
         # Make sure parameters are JSON serializable

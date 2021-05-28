@@ -142,22 +142,30 @@ def write2path(text, path):
     
     return
 
-def dqn(env, agent, **kwargs):
+def eval_agent(agent, env, eval_type, **kwargs):
     """
-    Deep Q-Learning
+    Evaluate agent using environment
 
     Args:
-        env (BananaEnv): Unity banana simulation environment
         agent (DQNAgent): Deep q-learning agent
+        env (BananaEnv): Unity banana simulation environment
+        eval_type (str): Training or testing agent
 
     Returns:
         None
 
     """
-    scores = []                                 # list containing scores from each episode
+    scores = []                                 # scores from each episode
     score_goal = 13.0                           # goal to get to
     window_size = 100                           # size for rolling window
+    eval_options = ['train', 'test']              # evaluation options
     scores_window = deque(maxlen=window_size)   # last 100 scores
+
+    # Error check
+    if eval_type.lower() not in eval_options:
+        raise ValueError(
+            'Invalid eval_type specified. Options are {}'.format(eval_options)
+        )
 
     # Initialize key word argument variables
     n_episodes = kwargs.get('n_episodes', 2000)
@@ -186,13 +194,17 @@ def dqn(env, agent, **kwargs):
         for t in range(max_t):
 
             # Get action from agent using current policy
-            action = agent.act(state, eps)
+            if eval_type == 'train':
+                action = agent.act(state, eps)
+            else:
+                action = agent.act(state)
 
             # Perform action in environment
             state, action, reward, next_state, done = env.step(action)
 
             # Update agent
-            agent.step(state, action, reward, next_state, done)
+            if eval_type == 'train':
+                agent.step(state, action, reward, next_state, done)
 
             # Update next state & score
             state = next_state
@@ -209,9 +221,12 @@ def dqn(env, agent, **kwargs):
         # Decrease epsilon
         eps = max(eps_end, eps_decay*eps)
 
-        # Print episode performance
-        print('\rEpisode {}\tAverage Score: {:.2f}'.format(
-            i_episode, np.mean(scores_window)), end="")
+        # Print & log episode performance
+        window_summary = '\rEpisode {}\tAverage Score: {:.2f}'.format(
+            i_episode, np.mean(scores_window))
+        print(window_summary, end="")
+        if eval_type == 'test':
+            write2path(window_summary, log)
 
         # Print & log performance of last window_size runs
         if i_episode % window_size == 0:
@@ -251,17 +266,30 @@ def main(args):
 
     """
 
-    # Create environment
-    env = BananaEnv(args.sim, train=True, seed=args.seed, verbose=args.verbose)
+    # Seed for repeatability
+    np.random.seed(args.seed)
+    diff_seed = args.seed + np.random.randint(100)
 
-    # Create agent
-    agent = DQNAgent(env.state_size, env.action_size, **vars(args))
+    # Create environments
+    train_env = BananaEnv(args.sim, train=True, seed=args.seed, verbose=args.verbose)
+    eval_env = BananaEnv(args.sim, train=False, seed=diff_seed, verbose=args.verbose)
+    naive_env = BananaEnv(args.sim, train=False, seed=diff_seed, verbose=args.verbose)
+
+    # Create agents
+    agent = DQNAgent(train_env.state_size, train_env.action_size, name='dqn', **vars(args))
+    naive = DQNAgent(naive_env.state_size, naive_env.action_size, name='naive', **vars(args))
 
     # Perform deep q-learning
-    scores = dqn(env, agent, **vars(args))
+    eval_agent(train_env, agent, 'train', **vars(args))
 
-    # Close environment
-    env.close()
+    # Evaluate agents
+    eval_agent(agent, eval_env, 'test', **vars(args))
+    eval_agent(naive, naive_env, 'test', **vars(args))
+
+    # Close environments
+    train_env.close()
+    eval_env.close()
+    naive_env.close()
 
     return
 
