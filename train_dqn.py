@@ -103,7 +103,7 @@ def plot_performance(scores, output, run_id, name):
     # Plot scores
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    plt.plot(scores, color='cyan', marker='.', label='Scores')
+    plt.scatter(np.arange(len(scores)), scores, color='cyan', label='Scores')
     plt.plot(avg_score, color='blue', label='Average')
     plt.ylabel('Score')
     plt.xlabel('Episode #')
@@ -114,6 +114,26 @@ def plot_performance(scores, output, run_id, name):
     plt.savefig(output / (str(run_id) + '__' + name))
     plt.close()
 
+    return
+
+def write2path(text, path):
+    """
+    Write text to path object
+
+    Args:
+        text (str): Text to log
+        path (Path): Path object
+    
+    Returns:
+        None
+    
+    """
+    if not path.exists():
+        path.write_text(text)
+    else:
+        with path.open('a') as f:
+            f.write(text)
+    
     return
 
 def dqn(env, agent, **kwargs):
@@ -146,6 +166,9 @@ def dqn(env, agent, **kwargs):
     # Initialize epsilon
     eps = eps_start
 
+    # Create log name
+    log = output / (str(run_id) + '__performance.log')
+
     # Train for n_episodes
     for i_episode in range(1, n_episodes+1):
 
@@ -172,7 +195,7 @@ def dqn(env, agent, **kwargs):
             # Check terminal condition
             if done:
                 break
-
+        
         # Update scores
         scores_window.append(score)       # save most recent score
         scores.append(score)              # save most recent score
@@ -184,22 +207,25 @@ def dqn(env, agent, **kwargs):
         print('\rEpisode {}\tAverage Score: {:.2f}'.format(
             i_episode, np.mean(scores_window)), end="")
 
-        # Print & log performance of last 
+        # Print & log performance of last window_size runs
         if i_episode % window_size == 0:
-            print('\rEpisode {}\tAverage Score: {:.2f}'.format(
-                i_episode, np.mean(scores_window)))
+            window_summary = '\rEpisode {}\tAverage Score: {:.2f}'.format(
+                i_episode, np.mean(scores_window))
+            print(window_summary)
+            write2path(window_summary, log)
 
-        # In order to solve the environment, your agent must get an average
-        # score of +13 over 100 consecutive episodes
+        # Terminal condition check
         if np.mean(scores_window) >= score_goal:
-            print('\nEnvironment solved in {:d} episodes!'
-                '\tAverage Score: {:.2f}'.format(
-                    i_episode-100, np.mean(scores_window)
-                )
-            )
-            torch.save(agent.qnetwork_local.state_dict(), 
-                output / (str(run_id) + '__model.pth'))
+            window_summary = (
+                '\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f}'
+            ).format(i_episode-100, np.mean(scores_window))
+            print(window_summary)
+            write2path(window_summary, log)
             break
+
+    # Save model 
+    torch.save(agent.qnetwork_local.state_dict(), 
+        output / (str(run_id) + '__model.pth'))
     
     # Plot training performance
     plot_performance(scores, output, run_id, 'dqn_training.png')
