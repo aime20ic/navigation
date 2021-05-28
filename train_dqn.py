@@ -24,11 +24,17 @@ def parse_args():
 
     """
     parser = argparse.ArgumentParser(description='DQN hyperparameters')
+    parser.add_argument('--agent-name', type=str, default='dqn-agent',
+        help='DQN agent name'
+    )
     parser.add_argument('--buffer-size', type=int, default=int(1e5),
         help='Experience replay buffer size'
     )
     parser.add_argument('--batch-size', type=int, default=64,
         help='Mini-batch size'
+    )
+    parser.add_argument('--env-name', type=str, default='banana-env',
+        help='BananaEnv name'
     )
     parser.add_argument('--eps-start', type=float, default=1.0,
         help='Starting value of epsilon, for epsilon-greedy action selection'
@@ -52,9 +58,6 @@ def parse_args():
     parser.add_argument('--n-episodes', type=int, default=2000,
         help='Maximum number of training episodes'
     )
-    parser.add_argument('--n-eval', type=int, default=100,
-        help='Maximum number of evaluation episodes'
-    )
     parser.add_argument('--output', type=str, default='./output',
         help='Directory to save models, logs, & other output'
     )
@@ -71,8 +74,8 @@ def parse_args():
     parser.add_argument('--tau', type=float, default=1e-3,
         help='Interpolation weight for soft update of target parameters'
     )
-    parser.add_argument('--t-eval', type=int, default=300,
-        help='Maximum number of timesteps per episode for evaluation'
+    parser.add_argument('--test', action='store_true',
+        help='Test mode, no agent training'
     )
     parser.add_argument('--update-every', type=int, default=4,
         help='Update frequency'
@@ -268,7 +271,7 @@ def eval_agent(agent, env, eval_type, **kwargs):
         'eps_end': eps_end,
         'eps_decay': eps_decay
     }
-    with open(prefix + '__parameters.json', 'w') as file:
+    with open(output / (prefix + '__parameters.json'), 'w') as file:
         json.dump(parameters, file, indent=4, sort_keys=True)
 
     return
@@ -285,30 +288,19 @@ def main(args):
 
     """
 
-    # Seed for repeatability
-    np.random.seed(args.seed)
-    diff_seed = args.seed + np.random.randint(100)
+    # Create environment
+    train_mode = False if args.test else True
+    env = BananaEnv(args.sim, name=args.env_name, train=train_mode, seed=args.seed, verbose=args.verbose)
 
-    # Train agent
-    train_env = BananaEnv(args.sim, name='train-env', train=True, seed=args.seed, verbose=args.verbose)
-    agent = DQNAgent(train_env.state_size, train_env.action_size, name='dqn', **vars(args))
-    eval_agent(agent, train_env, 'train', **vars(args))
-    train_env.close()
+    # Create agent
+    agent = DQNAgent(env.state_size, env.action_size, name=args.agent_name, **vars(args))
 
-    # Set evaluation parameters
-    args.n_episodes = args.n_eval
-    args.max_t = args.t_eval
+    # Evaluate agent
+    train_mode = 'test' if args.test else 'train'
+    eval_agent(agent, env, train_mode, **vars(args))
 
-    # Evaluate naive agent
-    naive_env = BananaEnv(args.sim, name='naive-env', train=False, seed=diff_seed, verbose=args.verbose)
-    naive = DQNAgent(naive_env.state_size, naive_env.action_size, name='naive', **vars(args))
-    eval_agent(naive, naive_env, 'test', **vars(args))
-    naive_env.close()
-
-    # Evaluate trained agent
-    eval_env = BananaEnv(args.sim, name='eval-env', train=False, seed=diff_seed, verbose=args.verbose)
-    eval_agent(agent, eval_env, 'test', **vars(args))
-    eval_env.close()
+    # Close env
+    env.close()
 
     return
 
