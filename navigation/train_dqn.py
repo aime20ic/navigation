@@ -110,7 +110,10 @@ def plot_performance(scores, name, window):
 
     # Create avg score
     avg = [np.mean(scores[:i+1]) for i in range(len(scores))]
-    window_avg = [np.mean(scores[i-window:i+1]) for i in range(len(scores))]
+    window_avg = [
+        np.mean(scores[i+1-window:i+1]) if i+1-window >= 0 else np.mean(scores[:i+1]) 
+        for i in range(len(scores))
+    ]
 
     # Plot scores
     fig = plt.figure()
