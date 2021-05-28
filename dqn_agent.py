@@ -1,8 +1,12 @@
+import json
+import time
 import numpy as np
 
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
+
+from pathlib import Path
 
 from model import QNetwork
 from replay_buffer import ReplayBuffer
@@ -27,6 +31,9 @@ class DQNAgent():
 
         # Set agent class variables
         self.t_step = 0
+        self.run_id = kwargs.get('run_id', int(time.time()))
+        self.output = kwargs.get('output', 
+            Path('./output/' + str(self.run_id) + '/'))
         self.rng = None
         self.rng_seed = None
         self.verbose = verbose
@@ -68,6 +75,9 @@ class DQNAgent():
             seed=self.rng_seed,
             device=self.device
         )
+
+        # Log class parameters
+        self._log_parameters()
 
         return
     
@@ -208,6 +218,36 @@ class DQNAgent():
         # Set seed & random number generator
         self.rng_seed = seed
         self.rng = np.random.RandomState(seed)
+
+        return
+
+    def _log_parameters(self):
+        """
+        Log agent parameters as JSON
+
+        Args:
+            None
+        
+        Returns:
+            None
+        
+        """
+
+        # Create file path
+        path = self.output / (str(self.run_id) + '__dqn_agent.json')
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Make sure parameters are JSON serializable
+        parameters = vars(self).copy()
+        for key, value in parameters.items():
+            try:
+                json.dumps(value)
+            except TypeError:
+                parameters[key] = str(value)
+        
+        # Save as JSON
+        with open(path, 'w') as file:
+            json.dump(parameters, file, indent=4, sort_keys=True)
 
         return
 

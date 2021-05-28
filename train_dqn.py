@@ -111,6 +111,7 @@ def plot_performance(scores, output, run_id, name):
     plt.show(block=False)
 
     # Save figure
+    output.mkdir(parents=True, exist_ok=True)
     plt.savefig(output / (str(run_id) + '__' + name))
     plt.close()
 
@@ -128,6 +129,11 @@ def write2path(text, path):
         None
     
     """
+
+    # Create path
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Write text to path
     if not path.exists():
         path.write_text(text)
     else:
@@ -224,6 +230,7 @@ def dqn(env, agent, **kwargs):
             break
 
     # Save model 
+    output.mkdir(parents=True, exist_ok=True)
     torch.save(agent.qnetwork_local.state_dict(), 
         output / (str(run_id) + '__model.pth'))
     
@@ -249,9 +256,6 @@ def main(args):
 
     # Create agent
     agent = DQNAgent(env.state_size, env.action_size, **vars(args))
-
-    # Create output directory
-    args.output.mkdir(parents=True, exist_ok=True)
 
     # Perform deep q-learning
     scores = dqn(env, agent, **vars(args))
