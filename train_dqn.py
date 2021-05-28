@@ -272,7 +272,9 @@ def eval_agent(agent, env, eval_type, **kwargs):
         'max_t': max_t,
         'eps_start': eps_start,
         'eps_end': eps_end,
-        'eps_decay': eps_decay
+        'eps_decay': eps_decay,
+        'agent_seed': agent.rng_seed,
+        'env_seed': env.rng_seed
     }
     with open(output / (prefix + '__parameters.json'), 'w') as file:
         json.dump(parameters, file, indent=4, sort_keys=True)
