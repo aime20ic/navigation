@@ -8,8 +8,8 @@ import torch.optim as optim
 
 from pathlib import Path
 
-from model import QNetwork
-from replay_buffer import ReplayBuffer
+from navigation.model import QNetwork
+from navigation.replay_buffer import ReplayBuffer
 
 
 class DQNAgent():

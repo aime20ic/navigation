@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from collections import deque
 
-from dqn_agent import DQNAgent
-from banana_env import BananaEnv
+from navigation.dqn_agent import DQNAgent
+from navigation.banana_env import BananaEnv
 
 
 def parse_args():
@@ -97,24 +97,27 @@ def parse_args():
 
     return args
 
-def plot_performance(scores, name):
+def plot_performance(scores, name, window):
     """
     Plot summary of DQN performance on environment
 
     Args:
         scores (list of float): Score per simulation episode
         name (Path): Name for file
+        window (int): Windowed average size
 
     """
 
     # Create avg score
-    avg_score = [np.mean(scores[:i+1]) for i in range(len(scores))]
+    avg = [np.mean(scores[:i+1]) for i in range(len(scores))]
+    window_avg = [np.mean(scores[i-window:i+1]) for i in range(len(scores))]
 
     # Plot scores
     fig = plt.figure()
     ax = fig.add_subplot(111)
     plt.scatter(np.arange(len(scores)), scores, color='cyan', label='Scores')
-    plt.plot(avg_score, color='blue', label='Average')
+    plt.plot(avg, color='blue', label='Average')
+    plt.plot(window, color='red', label='Windowed Average (n={})'.format(window))
     plt.ylabel('Score')
     plt.xlabel('Episode #')
     plt.legend(loc='upper left')
@@ -261,9 +264,9 @@ def eval_agent(agent, env, eval_type, **kwargs):
     
     # Plot training performance
     if eval_type == 'train':
-        plot_performance(scores, output / (prefix + '__training.png'))
+        plot_performance(scores, output / (prefix + '__training.png'), window_size)
     else:
-        plot_performance(scores, output / (prefix + '__testing.png'))
+        plot_performance(scores, output / (prefix + '__testing.png'), window_size)
 
     # Save evaluation parameters
     parameters = {
