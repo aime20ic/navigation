@@ -51,6 +51,7 @@ def parse_args():
     parser.add_argument('--hidden', nargs='*', default=[256,128,64],
         help='Model hidden layer sizes'
     )
+    parser.add_argument('--load', type=str, help='Path to model to load')
     parser.add_argument('--lr', type=float, default=5e-4, help='Learn rate')
     parser.add_argument('--max-t', type=int, default=300,
         help='Maximum number of timesteps per episode'
@@ -90,8 +91,9 @@ def parse_args():
     if args.run_id is None:
         args.run_id = int(time.time())
 
-    # Convert output directory to path object including run ID
+    # Convert string paths to path objects
     args.output = Path(args.output + '/' + str(args.run_id) + '/')
+    args.load = Path(args.load)
 
     return args
 
@@ -266,6 +268,7 @@ def eval_agent(agent, env, eval_type, **kwargs):
     # Save evaluation parameters
     parameters = {
         'n_episodes': n_episodes,
+        'eval_type': eval_type, 
         'max_t': max_t,
         'eps_start': eps_start,
         'eps_end': eps_end,
@@ -294,6 +297,7 @@ def main(args):
 
     # Create agent
     agent = DQNAgent(env.state_size, env.action_size, name=args.agent_name, **vars(args))
+    if args.load: agent.load(args.load)
 
     # Evaluate agent
     train_mode = 'test' if args.test else 'train'

@@ -205,6 +205,22 @@ class DQNAgent():
 
         return
 
+    def load(self, path):
+        """
+        Load weights specified in path into both local & target networks
+
+        Args:
+            path (Path): Saved model weights to load
+
+        Returns:
+            None
+        
+        """
+        print('Loading model from {}'.format(path.name))
+        self.qnetwork_local.load_state_dict(torch.load(path))
+        self.qnetwork_target.load_state_dict(torch.load(path))
+        return
+
     def seed(self, seed=None):
         """
         Set seed for random number generation, sampling, & repeatibility
