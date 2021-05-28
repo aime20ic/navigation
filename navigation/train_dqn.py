@@ -244,23 +244,22 @@ def eval_agent(agent, env, eval_type, **kwargs):
         scores_std = np.std(scores_window)
 
         # Print & log episode performance
-        window_summary = '\rEpisode {}\tAverage Score: {:.2f}'.format(
-            i_episode, scores_mean)
+        window_summary = '\rEpisode {}\tAverage Score: {:.2f}±{:.2f}'.format(
+            i_episode, scores_mean, scores_std)
         print(window_summary, end="")
         if eval_type == 'test': write2path(window_summary, log)
 
         # Print & log performance of last window_size runs
         if i_episode % window_size == 0:
-            window_summary = '\rEpisode {}\tAverage Score: {:.2f}'.format(
-                i_episode, scores_mean)
+            window_summary = '\rEpisode {}\tAverage Score: {:.2f}±{:.2f}'.format(
+                i_episode, scores_mean, scores_std)
             print(window_summary)
             write2path(window_summary, log)
 
         # Terminal condition check
         if eval_type == 'train' and scores_mean - scores_std >= score_goal:
-            window_summary = (
-                '\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f}'
-            ).format(i_episode-100, np.mean(scores_window))
+            window_summary = '\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f}±{:.2f}'.format(
+                i_episode-100, scores_mean, scores_std)
             print(window_summary)
             write2path(window_summary, log)
             break
