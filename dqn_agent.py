@@ -112,7 +112,7 @@ class DQNAgent():
         
         return
 
-    def act(self, state, eps=0.):
+    def act(self, state, eps=0., train=True):
         """
         Returns actions for given state as per current policy
         
@@ -125,10 +125,15 @@ class DQNAgent():
         
         """
         state = torch.from_numpy(state).float().unsqueeze(0).to(self.device)
+
+        # Put model into evaluation mode & get action values
         self.qnetwork_local.eval()
         with torch.no_grad():
             action_values = self.qnetwork_local(state)
-        self.qnetwork_local.train()
+
+        # Put model back in training mode
+        if train:
+            self.qnetwork_local.train()
 
         # Epsilon-greedy action selection
         if self.rng.uniform() > eps:

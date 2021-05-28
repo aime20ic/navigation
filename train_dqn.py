@@ -206,7 +206,7 @@ def eval_agent(agent, env, eval_type, **kwargs):
             if eval_type == 'train':
                 action = agent.act(state, eps)
             else:
-                action = agent.act(state)
+                action = agent.act(state, train=False)
 
             # Perform action in environment
             state, action, reward, next_state, done = env.step(action)
