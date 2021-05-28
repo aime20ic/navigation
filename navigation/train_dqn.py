@@ -124,6 +124,7 @@ def plot_performance(scores, name, window):
     plt.ylabel('Score')
     plt.xlabel('Episode #')
     plt.legend(loc='upper left')
+    ax.margins(y=.1, x=.1) # Help with scaling
     plt.show(block=False)
 
     # Save figure
@@ -238,22 +239,25 @@ def eval_agent(agent, env, eval_type, **kwargs):
         # Decrease epsilon
         eps = max(eps_end, eps_decay*eps)
 
+        # Calculate average & standard deviation of current scores
+        scores_mean = np.mean(scores_window)
+        scores_std = np.std(scores_window)
+
         # Print & log episode performance
         window_summary = '\rEpisode {}\tAverage Score: {:.2f}'.format(
-            i_episode, np.mean(scores_window))
+            i_episode, scores_mean)
         print(window_summary, end="")
-        if eval_type == 'test':
-            write2path(window_summary, log)
+        if eval_type == 'test': write2path(window_summary, log)
 
         # Print & log performance of last window_size runs
         if i_episode % window_size == 0:
             window_summary = '\rEpisode {}\tAverage Score: {:.2f}'.format(
-                i_episode, np.mean(scores_window))
+                i_episode, scores_mean)
             print(window_summary)
             write2path(window_summary, log)
 
         # Terminal condition check
-        if eval_type == 'train' and np.mean(scores_window) >= score_goal:
+        if eval_type == 'train' and scores_mean - scores_std >= score_goal:
             window_summary = (
                 '\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f}'
             ).format(i_episode-100, np.mean(scores_window))
