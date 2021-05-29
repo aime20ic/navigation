@@ -1,0 +1,12 @@
+{
+    "agent_seed": 15,
+    "best_avg_score": 15.78,
+    "env_seed": 15,
+    "eps_decay": 0.995,
+    "eps_end": 0.01,
+    "eps_start": 1.0,
+    "eval_type": "test",
+    "max_t": 300,
+    "n_episodes": 500,
+    "scores_mena": 14.74
+}

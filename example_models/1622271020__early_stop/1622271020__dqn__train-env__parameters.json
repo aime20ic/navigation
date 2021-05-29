@@ -1,0 +1,12 @@
+{
+    "agent_seed": 0,
+    "best_avg_score": 15.08,
+    "env_seed": 0,
+    "eps_decay": 0.995,
+    "eps_end": 0.01,
+    "eps_start": 1.0,
+    "eval_type": "train",
+    "max_t": 300,
+    "n_episodes": 2000,
+    "scores_mean": 14.69
+}

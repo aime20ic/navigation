@@ -1,0 +1,26 @@
+{
+    "action_size": 4,
+    "batch_size": 64,
+    "buffer_size": 100000,
+    "device": "cuda:0",
+    "gamma": 0.99,
+    "hidden": [
+        64,
+        64
+    ],
+    "lr": 0.0005,
+    "memory": "<navigation.replay_buffer.ReplayBuffer object at 0x000002589F5B3438>",
+    "name": "dqn",
+    "optimizer": "Adam (\nParameter Group 0\n    amsgrad: False\n    betas: (0.9, 0.999)\n    eps: 1e-08\n    lr: 0.0005\n    weight_decay: 0\n)",
+    "output": "output\\1622271020",
+    "qnetwork_local": "QNetwork(\n  (input_layer): Linear(in_features=37, out_features=64, bias=True)\n  (hidden_layers): ModuleList(\n    (0): Linear(in_features=64, out_features=64, bias=True)\n  )\n  (output_layer): Linear(in_features=64, out_features=4, bias=True)\n)",
+    "qnetwork_target": "QNetwork(\n  (input_layer): Linear(in_features=37, out_features=64, bias=True)\n  (hidden_layers): ModuleList(\n    (0): Linear(in_features=64, out_features=64, bias=True)\n  )\n  (output_layer): Linear(in_features=64, out_features=4, bias=True)\n)",
+    "rng": "RandomState(MT19937)",
+    "rng_seed": 0,
+    "run_id": 1622271020,
+    "state_size": 37,
+    "t_step": 0,
+    "tau": 0.001,
+    "update_every": 4,
+    "verbose": true
+}
