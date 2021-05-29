@@ -129,12 +129,13 @@ python -m navigation.train_dqn --help
 usage: train_dqn.py [-h] [--agent-name AGENT_NAME] [--buffer-size BUFFER_SIZE]
                     [--batch-size BATCH_SIZE] [--env-name ENV_NAME]
                     [--eps-start EPS_START] [--eps-end EPS_END]
-                    [--eps-decay EPS_DECAY] [--gammma GAMMMA]
+                    [--eps-decay EPS_DECAY] [--gammma GAMMMA] [--goal GOAL]
                     [--hidden [HIDDEN [HIDDEN ...]]] [--load LOAD] [--lr LR]
                     [--max-t MAX_T] [--n-episodes N_EPISODES]
                     [--output OUTPUT] [--run-id RUN_ID] [--seed SEED]
                     [--sim SIM] [--tau TAU] [--test]
-                    [--update-every UPDATE_EVERY] [--verbose]
+                    [--update-every UPDATE_EVERY] [--window WINDOW]
+                    [--verbose]
 
 DQN hyperparameters
 
@@ -155,6 +156,7 @@ optional arguments:
                         Multiplicative factor (per episode) for decreasing
                         epsilon
   --gammma GAMMMA       Discount factor
+  --goal GOAL           Score goal
   --hidden [HIDDEN [HIDDEN ...]]
                         Model hidden layer sizes
   --load LOAD           Path to model to load
@@ -171,5 +173,6 @@ optional arguments:
   --test                Test mode, no agent training
   --update-every UPDATE_EVERY
                         Update frequency
+  --window WINDOW       Window size to use for terminal condition check
   --verbose             Verbosity
   ```

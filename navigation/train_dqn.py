@@ -88,8 +88,8 @@ def plot_performance(scores, name, window_size):
         window_std.append(np.std(window))
 
     # Create 95% confidence interval (2*std)
-    lower_95 = window_avg - 2 * window_std
-    upper_95 = window_avg + 2 * window_std
+    lower_95 = np.array(window_avg) - 2 * np.array(window_std)
+    upper_95 = np.array(window_avg) + 2 * np.array(window_std)
 
     # Plot scores
     fig = plt.figure()
@@ -151,6 +151,7 @@ def eval_agent(agent, env, eval_type, **kwargs):
     """
     scores = []                                 # scores from each episode
     best_avg_score = -100                       # best averaged window score
+    best_avg_score_std = None                   # best averaged window score std
     score_goal = kwargs.get('goal', 13.0)       # goal to get to
     window_size = kwargs.get('window', 100)     # size for rolling window
     eval_options = ['train', 'test']            # evaluation options
@@ -234,6 +235,7 @@ def eval_agent(agent, env, eval_type, **kwargs):
                 output.mkdir(parents=True, exist_ok=True)
                 torch.save(agent.qnetwork_local.state_dict(), output / (prefix + '__best_model.pth'))
                 best_avg_score = scores_mean
+                best_avg_score_std = scores_std
 
             # Print & log performance of last window_size runs
             window_summary = '\rEpisode {}\tAverage Score: {:.2f} ± {:.2f}'.format(i_episode, scores_mean, scores_std)
@@ -277,7 +279,9 @@ def eval_agent(agent, env, eval_type, **kwargs):
         'agent_seed': agent.rng_seed,
         'env_seed': env.rng_seed,
         'best_avg_score': best_avg_score,
-        'scores_mena': scores_mean
+        'best_avg_score_std': best_avg_score_std,
+        'scores_mean': scores_mean,
+        'scores_std': scores_std
     }
     with open(output / (prefix + '__parameters.json'), 'w') as file:
         json.dump(parameters, file, indent=4, sort_keys=True)
