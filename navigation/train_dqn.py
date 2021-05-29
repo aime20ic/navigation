@@ -77,6 +77,7 @@ def plot_performance(scores, name, window_size):
 
     """
     window_avg = []
+    window_std = []
     window = deque(maxlen=window_size)
 
     # Create avg score
@@ -84,6 +85,11 @@ def plot_performance(scores, name, window_size):
     for i in range(len(scores)):
         window.append(scores[i])
         window_avg.append(np.mean(window))
+        window_std.append(np.std(window))
+
+    # Create 95% confidence interval (2*std)
+    lower_95 = window_avg - 2 * window_std
+    upper_95 = window_avg + 2 * window_std
 
     # Plot scores
     fig = plt.figure()
@@ -91,6 +97,7 @@ def plot_performance(scores, name, window_size):
     plt.scatter(np.arange(len(scores)), scores, color='cyan', label='Scores')
     plt.plot(avg, color='blue', label='Average')
     plt.plot(window_avg, color='red', label='Windowed Average (n={})'.format(window_size))
+    plt.fill_between(np.arange(len(window_std)), lower_95, upper_95, color='red', alpha=0.1)
     plt.ylabel('Score')
     plt.xlabel('Episode #')
     plt.legend(loc='upper left')
@@ -234,7 +241,7 @@ def eval_agent(agent, env, eval_type, **kwargs):
             write2path(window_summary, log)
 
             # Terminal condition check (early stop / overfitting)
-            if scores_mean < best_avg_score:
+            if eval_type == 'train' and scores_mean < best_avg_score:
                 window_summary = ('\rEarly stop at {:d}/{:d} episodes!\rAverage Score: {:.2f} ± {:.2f}'
                     '\tBest Average Score: {:.2f}').format(i_episode, n_episodes, scores_mean, scores_std, best_avg_score)
                 print(window_summary)
