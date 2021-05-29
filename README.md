@@ -42,9 +42,15 @@ To set up your python environment to run the code in this repository, follow the
     activate navigation
     ```
 
-2. Install [dependencies](#dependencies)
+2. Clone Navigation repository 
 
-3. Download [Unity Simulation Environment](#unity-simulation-environment)
+    ```bash
+    git clone 
+    ```
+
+3. Install [dependencies](#dependencies)
+
+4. Download [Unity Simulation Environment](#unity-simulation-environment)
 
 ### Dependencies
 
@@ -61,7 +67,8 @@ To install required dependencies to execute code in the repository, follow the i
 2. Install required packages using `pip` from main repository directory
 
     ```bash
-    conda install pytorch cudatoolkit=10.2 -c pytorch
+    cd Navigation
+    pip install .
     ```
 
 ### Unity Simulation Environment

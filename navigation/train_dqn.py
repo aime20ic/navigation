@@ -231,7 +231,7 @@ def eval_agent(agent, env, eval_type, **kwargs):
         if i_episode % window_size == 0:
             
             # Save best performing model (weights)
-            if scores_mean >= best_avg_score:
+            if eval_type=='train' and scores_mean >= best_avg_score:
                 output.mkdir(parents=True, exist_ok=True)
                 torch.save(agent.qnetwork_local.state_dict(), output / (prefix + '__best_model.pth'))
                 best_avg_score = scores_mean
@@ -258,9 +258,10 @@ def eval_agent(agent, env, eval_type, **kwargs):
             write2path(window_summary, log)
             break
 
-    # Save final model (weights) 
-    output.mkdir(parents=True, exist_ok=True)
-    torch.save(agent.qnetwork_local.state_dict(), output / (prefix + '__model.pth'))
+    # Save final model (weights)
+    if eval_type == 'train': 
+        output.mkdir(parents=True, exist_ok=True)
+        torch.save(agent.qnetwork_local.state_dict(), output / (prefix + '__model.pth'))
     
     # Plot training performance
     if eval_type == 'train':
