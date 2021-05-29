@@ -45,7 +45,7 @@ To set up your python environment to run the code in this repository, follow the
 2. Clone Navigation repository 
 
     ```bash
-    git clone 
+    git clone git@github.com:aime20ic/navigation.git
     ```
 
 3. Install [dependencies](#dependencies)
